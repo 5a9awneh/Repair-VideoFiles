@@ -380,8 +380,8 @@ $ffprobe = $_bins.ffprobe
 
 $script:bestEncoder = DetectBestEncoder $ffmpeg
 
-$srcDir = Unquote (Read-Host "`nSource directory — full path to folder with .mp4 files (e.g. D:\Footage, \\server\share, C:\Users\YourName\Videos; quotes optional)")
-$outDir = Unquote (Read-Host "Output directory — full path for repaired files (e.g. D:\Output, C:\Users\YourName\Desktop\Repaired; avoid C:\... root; quotes optional)")
+$srcDir = Unquote (Read-Host "`nSource directory - full path to folder with .mp4 files (e.g. D:\Footage, \\server\share, C:\Users\YourName\Videos; quotes optional)")
+$outDir = Unquote (Read-Host "Output directory - full path for repaired files (e.g. D:\Output, C:\Users\YourName\Desktop\Repaired; avoid C:\... root; quotes optional)")
 
 if (-not (Test-Path -LiteralPath $srcDir -PathType Container)) { throw "Input dir not found: $srcDir" }
 New-Item -ItemType Directory -Force -LiteralPath $outDir | Out-Null
@@ -479,8 +479,8 @@ foreach ($file in $files) {
     # Ensure any leftover ffmpeg (from the job) releases the output file handle
     Start-Sleep -Milliseconds 800
     Get-Process ffmpeg -ErrorAction SilentlyContinue |
-      Where-Object { $_.StartTime -ge $t0 } |
-      Stop-Process -Force -ErrorAction SilentlyContinue
+    Where-Object { $_.StartTime -ge $t0 } |
+    Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 800
 
 
