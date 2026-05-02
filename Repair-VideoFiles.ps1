@@ -59,10 +59,10 @@ function QuoteArg([string]$s) {
 }
 
 function RunExeSimple([string]$exe, [string[]]$argsList) {
-  $args = ($argsList -join ' ')
+  $argStr = ($argsList -join ' ')
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = $exe
-  $psi.Arguments = $args
+  $psi.Arguments = $argStr
   $psi.UseShellExecute = $false
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError = $true
@@ -96,9 +96,10 @@ function DetectBestEncoder([string]$ffmpeg) {
       Write-Host "OK Available" -ForegroundColor Green
       Write-Host ""
       return [pscustomobject]@{
-        Name  = 'h264_nvenc'
-        Label = 'NVENC (NVIDIA GPU)'
-        Args  = @('-hwaccel', 'cuda', '-hwaccel_output_format', 'cuda', '-c:v', 'h264_nvenc', '-preset', 'p4', '-cq', '23', '-pix_fmt', 'yuv420p')
+        Name    = 'h264_nvenc'
+        Label   = 'NVENC (NVIDIA GPU)'
+        PreArgs = @()
+        OutArgs = @('-c:v', 'h264_nvenc', '-preset', 'p4', '-cq', '23', '-pix_fmt', 'yuv420p')
       }
     }
     Write-Host "X Not available" -ForegroundColor DarkGray
@@ -111,9 +112,10 @@ function DetectBestEncoder([string]$ffmpeg) {
       Write-Host "OK Available" -ForegroundColor Green
       Write-Host ""
       return [pscustomobject]@{
-        Name  = 'h264_qsv'
-        Label = 'QSV (Intel iGPU)'
-        Args  = @('-c:v', 'h264_qsv', '-preset', 'veryfast', '-global_quality', '23', '-pix_fmt', 'nv12')
+        Name    = 'h264_qsv'
+        Label   = 'QSV (Intel iGPU)'
+        PreArgs = @()
+        OutArgs = @('-c:v', 'h264_qsv', '-preset', 'veryfast', '-global_quality', '23', '-pix_fmt', 'nv12')
       }
     }
     Write-Host "X Not available" -ForegroundColor DarkGray
@@ -126,9 +128,10 @@ function DetectBestEncoder([string]$ffmpeg) {
       Write-Host "OK Available" -ForegroundColor Green
       Write-Host ""
       return [pscustomobject]@{
-        Name  = 'h264_amf'
-        Label = 'AMF (AMD GPU)'
-        Args  = @('-c:v', 'h264_amf', '-quality', 'speed', '-qp_i', '23', '-qp_p', '23', '-pix_fmt', 'yuv420p')
+        Name    = 'h264_amf'
+        Label   = 'AMF (AMD GPU)'
+        PreArgs = @()
+        OutArgs = @('-c:v', 'h264_amf', '-quality', 'speed', '-qp_i', '23', '-qp_p', '23', '-pix_fmt', 'yuv420p')
       }
     }
     Write-Host "X Not available" -ForegroundColor DarkGray
@@ -136,17 +139,18 @@ function DetectBestEncoder([string]$ffmpeg) {
 
   Write-Host "  Using x264 (CPU fallback)`n" -ForegroundColor Yellow
   return [pscustomobject]@{
-    Name  = 'libx264'
-    Label = 'x264 (CPU)'
-    Args  = @('-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p')
+    Name    = 'libx264'
+    Label   = 'x264 (CPU)'
+    PreArgs = @()
+    OutArgs = @('-c:v', 'libx264', '-preset', 'veryfast', '-crf', '23', '-pix_fmt', 'yuv420p')
   }
 }
 
 function RunFFmpegWithProgress([string]$ffmpeg, [string[]]$argsList, [string]$label, [double]$durationSec) {
-  $args = ($argsList -join ' ')
+  $argStr = ($argsList -join ' ')
   $psi = New-Object System.Diagnostics.ProcessStartInfo
   $psi.FileName = $ffmpeg
-  $psi.Arguments = $args
+  $psi.Arguments = $argStr
   $psi.UseShellExecute = $false
   $psi.RedirectStandardOutput = $true
   $psi.RedirectStandardError = $true
@@ -172,6 +176,8 @@ function RunFFmpegWithProgress([string]$ffmpeg, [string[]]$argsList, [string]$la
     }
   }
   
+  $stderrEvent = $null
+  $stdoutEvent = $null
   $stderrEvent = Register-ObjectEvent -InputObject $p -EventName ErrorDataReceived -Action $stderrHandler -MessageData $stderrBuffer
   $stdoutEvent = Register-ObjectEvent -InputObject $p -EventName OutputDataReceived -Action $stdoutHandler -MessageData $stdoutBuffer
   
@@ -374,11 +380,11 @@ $ffprobe = $_bins.ffprobe
 
 $script:bestEncoder = DetectBestEncoder $ffmpeg
 
-$srcDir = Unquote (Read-Host "`nSource directory — full path to folder with .mp4 files (e.g. D:\Footage, \\server\share, %USERPROFILE%\Videos; quotes optional)")
-$outDir = Unquote (Read-Host "Output directory — full path for repaired files (e.g. D:\Output, %USERPROFILE%\Desktop\Repaired; avoid C:\... root; quotes optional)")
+$srcDir = Unquote (Read-Host "`nSource directory — full path to folder with .mp4 files (e.g. D:\Footage, \\server\share, C:\Users\YourName\Videos; quotes optional)")
+$outDir = Unquote (Read-Host "Output directory — full path for repaired files (e.g. D:\Output, C:\Users\YourName\Desktop\Repaired; avoid C:\... root; quotes optional)")
 
 if (-not (Test-Path -LiteralPath $srcDir -PathType Container)) { throw "Input dir not found: $srcDir" }
-New-Item -ItemType Directory -Force -Path $outDir | Out-Null
+New-Item -ItemType Directory -Force -LiteralPath $outDir | Out-Null
 
 $log = Join-Path $outDir "_verify_log.csv"
 "input,output,status,action,decode_severity,encoder,details" | Out-File -Encoding utf8 $log
@@ -439,7 +445,7 @@ foreach ($file in $files) {
   $pollMs = 500     # polling interval
 
   $t0 = Get-Date
-  $lastGrow = Get-Date
+  $lastGrow = $null
   $lastSize = 0L
 
   while ($true) {
@@ -455,7 +461,7 @@ foreach ($file in $files) {
     }
 
     $elapsed = (New-TimeSpan -Start $t0 -End (Get-Date)).TotalSeconds
-    $stalled = (New-TimeSpan -Start $lastGrow -End (Get-Date)).TotalSeconds
+    $stalled = if ($null -ne $lastGrow) { (New-TimeSpan -Start $lastGrow -End (Get-Date)).TotalSeconds } else { 0 }
 
     if ($elapsed -ge $hardCapSec -or $stalled -ge $stallSec) { break }
 
@@ -472,7 +478,9 @@ foreach ($file in $files) {
 
     # Ensure any leftover ffmpeg (from the job) releases the output file handle
     Start-Sleep -Milliseconds 800
-    Get-Process ffmpeg -ErrorAction SilentlyContinue | Stop-Process -Force -ErrorAction SilentlyContinue
+    Get-Process ffmpeg -ErrorAction SilentlyContinue |
+      Where-Object { $_.StartTime -ge $t0 } |
+      Stop-Process -Force -ErrorAction SilentlyContinue
     Start-Sleep -Milliseconds 800
 
 
@@ -523,8 +531,7 @@ foreach ($file in $files) {
   $usedEncoder = $script:bestEncoder.Name
 
   try {
-    $encArgs = @('-y') + $script:bestEncoder.Args + @(
-      '-i', (QuoteArg $in),
+    $encArgs = @('-y') + $script:bestEncoder.PreArgs + @('-i', (QuoteArg $in)) + $script:bestEncoder.OutArgs + @(
       '-an', '-vf', 'setpts=PTS-STARTPTS',
       '-movflags', '+faststart',
       (QuoteArg $out2)

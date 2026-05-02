@@ -66,7 +66,6 @@ Each input file goes through up to two passes:
 - Only the **primary video stream** is preserved — audio is intentionally dropped (`-an`). This is by design for CCTV footage, which is typically silent or has irrelevant audio.
 - Re-encode uses a fixed quality target (CRF 23 / QP 23). Adjust in the script if needed.
 - Remux has a hard timeout cap (90s) and stall detection (15s no output growth) to handle frozen ffmpeg processes on severely corrupted files.
-- The script sets its working directory to `$PSScriptRoot` at startup — run it from the folder it lives in, or use the full path.
 
 ---
 
