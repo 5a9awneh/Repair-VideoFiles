@@ -1,7 +1,7 @@
 # Repair-VideoFiles
 
 <!-- BADGES:START -->
-[![License](https://img.shields.io/github/license/5a9awneh/Repair-VideoFiles)](LICENSE) [![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/en-us/powershell/) [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows) [![Last Commit](https://img.shields.io/github/last-commit/5a9awneh/Repair-VideoFiles)](https://github.com/5a9awneh/Repair-VideoFiles/commits/main) [<img src="https://madebyhuman.iamjarl.com/badges/loop-white.svg" alt="Human in the Loop" height="20">](https://madebyhuman.iamjarl.com)
+[![License](https://img.shields.io/github/license/5a9awneh/Repair-VideoFiles)](LICENSE) [![PowerShell](https://img.shields.io/badge/PowerShell-5391FE?logo=powershell&logoColor=white)](https://learn.microsoft.com/en-us/powershell/) [![Windows](https://img.shields.io/badge/Windows-0078D6?logo=windows&logoColor=white)](https://www.microsoft.com/windows) [![Last Commit](https://img.shields.io/github/last-commit/5a9awneh/Repair-VideoFiles)](https://github.com/5a9awneh/Repair-VideoFiles/commits/main) [![Human in the Loop](https://img.shields.io/badge/human--in--the--loop-%E2%9C%93-brightgreen?style=flat)](https://github.com/5a9awneh/Repair-VideoFiles)
 <!-- BADGES:END -->
 
 Repairs corrupted or timestamp-broken MP4 files — common with CCTV incident exports and bad trim operations. Remuxes, verifies, and re-encodes with automatic GPU selection, then logs every result to a CSV.
