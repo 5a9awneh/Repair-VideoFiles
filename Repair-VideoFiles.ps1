@@ -384,7 +384,7 @@ $srcDir = Unquote (Read-Host "`nSource directory - full path to folder with .mp4
 $outDir = Unquote (Read-Host "Output directory - full path for repaired files (e.g. D:\Output, C:\Users\YourName\Desktop\Repaired; avoid C:\... root; quotes optional)")
 
 if (-not (Test-Path -LiteralPath $srcDir -PathType Container)) { throw "Input dir not found: $srcDir" }
-New-Item -ItemType Directory -Force -LiteralPath $outDir | Out-Null
+New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
 $log = Join-Path $outDir "_verify_log.csv"
 "input,output,status,action,decode_severity,encoder,details" | Out-File -Encoding utf8 $log
