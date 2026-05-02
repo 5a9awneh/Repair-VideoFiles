@@ -383,6 +383,8 @@ $script:bestEncoder = DetectBestEncoder $ffmpeg
 $srcDir = Unquote (Read-Host "`nSource directory - full path to folder with .mp4 files (e.g. D:\Footage, \\server\share, C:\Users\YourName\Videos; quotes optional)")
 $outDir = Unquote (Read-Host "Output directory - full path for repaired files (e.g. D:\Output, C:\Users\YourName\Desktop\Repaired; avoid C:\... root; quotes optional)")
 
+if (-not $srcDir) { Write-Host "`nError: source directory cannot be empty." -ForegroundColor Red; exit 1 }
+if (-not $outDir) { Write-Host "Error: output directory cannot be empty." -ForegroundColor Red; exit 1 }
 if (-not (Test-Path -LiteralPath $srcDir -PathType Container)) { throw "Input dir not found: $srcDir" }
 New-Item -ItemType Directory -Force -Path $outDir | Out-Null
 
