@@ -1,0 +1,15 @@
+# Script output — video files and logs
+*.mp4
+*.csv
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Editor
+.vscode/
+
+# Temp / backup
+*.tmp
+*.bak
