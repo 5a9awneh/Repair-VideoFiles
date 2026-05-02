@@ -22,6 +22,12 @@ Repairs corrupted or timestamp-broken MP4 files — common with CCTV incident ex
 
 ## 🚀 Usage
 
+**Option A — double-click:**
+```
+RUN.bat
+```
+
+**Option B — PowerShell directly:**
 ```powershell
 .\Repair-VideoFiles.ps1
 ```
