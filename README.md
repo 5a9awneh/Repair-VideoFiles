@@ -6,6 +6,35 @@
 
 Repairs corrupted or timestamp-broken MP4 files — common with CCTV incident exports and bad trim operations. Remuxes, verifies, and re-encodes with automatic GPU selection, then logs every result to a CSV.
 
+**Script running — encoder detection, per-file remux/verify/re-encode:**
+
+<img src="images/screenshots/script-running.png" alt="Repair-VideoFiles running: encoder detection, per-file remux, verify, and re-encode with CPU fallback"/>
+
+```mermaid
+flowchart TD
+    A([Start]) --> B{ffmpeg & ffprobe\nfound in PATH?}
+    B -- No --> C[Offer winget install]
+    C --> D{Installed?}
+    D -- No --> E([Exit — ffmpeg required])
+    D -- Yes --> F[Prompt for source & output directories]
+    B -- Yes --> F
+    F --> G[Enumerate .mp4 files]
+    G --> H[Pass 1 — Remux\nstream copy to clean MP4 container]
+    H --> I{Container valid?\nDecode health OK?}
+    I -- Yes --> J[Output: _fixed.mp4]
+    I -- No --> K[Pass 2 — Re-encode\nNVENC → QSV → AMF → libx264]
+    K --> L[Output: _fixed_reencode.mp4]
+    J --> M[Log to _verify_log.csv]
+    L --> M
+    M --> N{More files?}
+    N -- Yes --> H
+    N -- No --> O([All files processed ✓])
+    classDef success fill:#2d6a2d,color:#fff,stroke:#1a3d1a
+    classDef failure fill:#8b1a1a,color:#fff,stroke:#5a0d0d
+    class O success
+    class E failure
+```
+
 ---
 
 ## 📋 Requirements
